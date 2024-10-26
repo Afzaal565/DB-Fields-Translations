@@ -1,0 +1,14 @@
+{
+    "name": "afzaal/field-trans",
+    "description": "A Laravel package for field translations.",
+    "type": "library",
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "FieldTrans\\": "src/"
+        }
+    },
+    "require": {},
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
