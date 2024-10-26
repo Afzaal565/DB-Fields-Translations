@@ -1,6 +1,24 @@
 {
     "name": "afzaal565/field-translations",
     "description": "A Laravel package for field translations.",
+    "keywords": [
+        "afzaal565",
+        "field",
+        "dbt_translations",
+        "dbt_countries",
+        "dbt_languages",
+        "translations",
+        "db_translations",
+        "field_translations"
+    ],
+    "authors": [
+        {
+            "name": "Afzaal Hussain",
+            "email": "afzaalhussain565@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/Afzaal565/DB-Fields-Translations",
     "type": "library",
     "version": "1.0.0",
     "autoload": {
@@ -8,7 +26,22 @@
             "FieldTranslations\\": "src/"
         }
     },
-    "require": {},
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "afzaal565\\field_translations\\FieldTranslationProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.0",
+        "illuminate/auth": "^8.12|^9.0|^10.0|^11.0",
+        "illuminate/container": "^8.12|^9.0|^10.0|^11.0",
+        "illuminate/database": "^8.12|^9.0|^10.0|^11.0"
+    },
     "minimum-stability": "stable",
     "prefer-stable": true
 }

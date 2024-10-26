@@ -11,12 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dbt_translations', function (Blueprint $table) {
+        $tableName = config('field_translation.translations') ?? 'dbt_translations';
+
+        $languageTable = config('field_translation.languages') ?? 'dbt_languages';
+
+
+        Schema::create($tableName, function (Blueprint $table) use ($languageTable) {
             $table->bigIncrements('id');
-            $table->foreignId('language_id')->constrained('dbt_languages')->cascadeOnDelete();
+            $table->foreignId('language_id')->constrained($languageTable)->cascadeOnDelete();
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
-            $table->index(['model_id', 'model_type'], 'dbt_translations_model_id_model_type_index');
+            $table->index(['model_id', 'model_type'], $languageTable.'_model_id_model_type_index');
             $table->string('field');
             $table->text('translation');
             $table->timestamps();

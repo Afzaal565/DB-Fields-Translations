@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dbt_languages', function (Blueprint $table) {
+        $tableName = config('field_translation.countries') ?? 'dbt_countries';
+
+        Schema::create($tableName, function (Blueprint $table) {
             $table->id();
             $table->string('name'); // 'name' column
             $table->string('slug')->unique(); // 'slug' column, set as unique
-            $table->string('code', 10); // 'code' column, with a max length of 10 characters
-            $table->foreignId('country_id')->constrained('dbt_countries')->onDelete('cascade'); // 'country_id' foreign key
-            $table->boolean('rtl')->default(false);
+            $table->string('flag')->nullable(); // 'flag' column, allowing null values
+            $table->string('time_zone'); // 'time_zone' column
+            $table->string('currency_code'); 
             $table->timestamps();
         });
     }
@@ -27,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dbt_languages');
+        Schema::dropIfExists('dbt_countries');
     }
 };
