@@ -1,8 +1,8 @@
 <?php
 
-namespace FieldTrans\Models;
+namespace FieldTranslations\Models;
 
-use FieldTrans\Models\Language;
+use FieldTranslations\Models\Language;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;

@@ -1,10 +1,10 @@
 <?php
 
-namespace FieldTrans\Models;
+namespace FieldTranslations\Models;
 
-use FieldTrans\Models\Country;
-use FieldTrans\Models\Translation;
-use FieldTrans\Traits\Sluggable;
+use FieldTranslations\Models\Country;
+use FieldTranslations\Models\Translation;
+use FieldTranslations\Traits\Sluggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

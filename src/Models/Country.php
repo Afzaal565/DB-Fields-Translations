@@ -1,8 +1,8 @@
 <?php
 
-namespace FieldTrans\Models;
+namespace FieldTranslations\Models;
 
-use FieldTrans\Traits\Sluggable;
+use FieldTranslations\Traits\Sluggable;
 use Illuminate\Database\Eloquent\Model;
 
 class Country extends Model

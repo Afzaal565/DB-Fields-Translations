@@ -1,9 +1,9 @@
 <?php
 
-namespace FieldTrans\Traits;
+namespace FieldTranslations\Traits;
 
-use FieldTrans\Models\Language;
-use FieldTrans\Models\Translation;
+use FieldTranslations\Models\Language;
+use FieldTranslations\Models\Translation;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
 

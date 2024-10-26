@@ -1,6 +1,6 @@
 <?php
 
-namespace FieldTrans\Traits;
+namespace FieldTranslations\Traits;
 
 use Illuminate\Support\Str;
 

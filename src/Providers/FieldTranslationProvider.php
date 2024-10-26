@@ -1,7 +1,7 @@
 <?php
 
 
-namespace FieldTrans\Providers;
+namespace FieldTranslations\Providers;
 
 use Illuminate\Support\ServiceProvider;
 

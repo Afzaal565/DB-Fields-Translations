@@ -1,9 +1,9 @@
 <?php
 
-namespace FieldTrans\Traits;
+namespace FieldTranslations\Traits;
 
 use Illuminate\Support\Facades\App;
-use FieldTrans\Models\Language;
+use FieldTranslations\Models\Language;
 
 trait LocaleTrait
 {

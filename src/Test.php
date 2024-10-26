@@ -1,6 +1,6 @@
 <?php
 
-namespace FieldTrans;
+namespace FieldTranslations;
 
 class Test
 {
