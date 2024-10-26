@@ -32,7 +32,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "afzaal565\\field_translations\\FieldTranslationProvider"
+                "FieldTranslations\\Providers\\FieldTranslationProvider"
             ]
         }
     },
