@@ -41,7 +41,7 @@ Schema::create('translations', function (Blueprint $table) {
 });
 ```
 # ⚙️ Usage
-###🔹 Step 1: Add Trait to Your Model
+##🔹 Step 1: Add Trait to Your Model
 ```bash
 use FieldTranslations\Traits\Translateable;
 
@@ -52,7 +52,7 @@ class Product extends Model
     protected $fillable = ['name', 'description'];
 }
 ```
-###🔹 Step 2: Use LocaleTrait in Controller (Optional)
+##🔹 Step 2: Use LocaleTrait in Controller (Optional)
 
 ```bash
 use FieldTranslations\Traits\LocaleTrait;
@@ -67,7 +67,7 @@ class ExampleController extends Controller
     }
 }
 
-### 📝 Storing Translations
+# 📝 Storing Translations
 ```bash
 public function store(Request $request)
 {
