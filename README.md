@@ -10,10 +10,8 @@ Install the package via Composer:
 
 ```bash
 composer require afzaal565/db-fields-translations
-⚙️ Publish Config and Migrations
-bash
-Copy
-Edit
+## ⚙️ Publish Config and Migrations
+
 php artisan vendor:publish --provider="Afzaal565\DBFieldsTranslations\DBFieldsTranslationsServiceProvider"
 php artisan migrate
 🧬 Database Structure
