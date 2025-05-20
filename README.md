@@ -90,24 +90,24 @@ $product = Product::find($id);
 // Get translation for a specific field
 $name = $product->tranlationByField($currentLangId, 'name') ?? $product->name;
 ```
-🔎 Filtering Models Without a Translation
-
+## 🔎 Filtering Models Without a Translation
+```bash
 $languageId = Language::where('code', 'de')->value('id');
 
 $productsWithoutGerman = Product::withoutTranslationForLanguage($languageId)->get();
-🔧 Available Methods
-Method	Description
+```
+## 🔧 Available Methods
+### Method	Description
+```bash
 translations()	MorphMany relationship
 getTranslatedFields($languageId)	Get all translations for the language
 getFirstTranslation($languageId)	Get the first translated value
 tranlationByField($languageId, $field)	Get a specific field translation
 translationTo($request, $language, $fields)	Save or update translation(s)
 scopeWithoutTranslationForLanguage($languageId)	Scope to find records without translation
-
-✅ Example JSON Output
-json
-Copy
-Edit
+```
+## ✅ Example JSON Output
+```bash
 {
   "id": 1,
   "name": "Shoes",
@@ -119,5 +119,6 @@ Edit
     }
   ]
 }
-📄 License
+```
+# 📄 License
 This package is open-source and licensed under the MIT License.
