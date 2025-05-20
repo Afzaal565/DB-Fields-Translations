@@ -16,3 +16,15 @@ composer require afzaal565/db-fields-translations
 
 php artisan vendor:publish --provider="Afzaal565\DBFieldsTranslations\DBFieldsTranslationsServiceProvider"
 php artisan migrate
+
+
+🧬 Database Structure
+languages table
+Stores supported language codes:
+
+Schema::create('languages', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('code')->unique(); // e.g., "en", "de"
+    $table->timestamps();
+});
