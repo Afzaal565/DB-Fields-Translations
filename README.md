@@ -28,12 +28,9 @@ Schema::create('languages', function (Blueprint $table) {
     $table->timestamps();
 });
 ```
-🗂️ translations Table
+### 🗂️ translations Table
 Stores translated fields for any model:
-
-php
-Copy
-Edit
+```bash
 Schema::create('translations', function (Blueprint $table) {
     $table->id();
     $table->morphs('model'); // model_type & model_id
@@ -42,11 +39,10 @@ Schema::create('translations', function (Blueprint $table) {
     $table->text('translation');
     $table->timestamps();
 });
-⚙️ Usage
-🔹 Step 1: Add Trait to Your Model
-php
-Copy
-Edit
+```
+# ⚙️ Usage
+###🔹 Step 1: Add Trait to Your Model
+```bash
 use FieldTranslations\Traits\Translateable;
 
 class Product extends Model
@@ -55,10 +51,10 @@ class Product extends Model
 
     protected $fillable = ['name', 'description'];
 }
-🔹 Step 2: Use LocaleTrait in Controller (Optional)
-php
-Copy
-Edit
+```
+###🔹 Step 2: Use LocaleTrait in Controller (Optional)
+
+```bash
 use FieldTranslations\Traits\LocaleTrait;
 
 class ExampleController extends Controller
@@ -70,10 +66,9 @@ class ExampleController extends Controller
         return $this->getLanguage(); // Based on App::getLocale()
     }
 }
-📝 Storing Translations
-php
-Copy
-Edit
+
+### 📝 Storing Translations
+```bash
 public function store(Request $request)
 {
     $product = Product::create([
@@ -85,20 +80,18 @@ public function store(Request $request)
 
     $product->translationTo($request, $language, ['name', 'description']);
 }
-🔍 Retrieving Translations
-php
-Copy
-Edit
+```
+## 🔍 Retrieving Translations
+```bash
 $currentLangId = Language::where('code', app()->getLocale())->value('id');
 
 $product = Product::find($id);
 
 // Get translation for a specific field
 $name = $product->tranlationByField($currentLangId, 'name') ?? $product->name;
+```
 🔎 Filtering Models Without a Translation
-php
-Copy
-Edit
+
 $languageId = Language::where('code', 'de')->value('id');
 
 $productsWithoutGerman = Product::withoutTranslationForLanguage($languageId)->get();
