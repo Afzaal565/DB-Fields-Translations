@@ -10,23 +10,24 @@ Install the package via Composer:
 
 ```bash
 composer require afzaal565/db-fields-translations
+```
 ## ⚙️ Publish Config and Migrations
 
+```bash
 php artisan vendor:publish --provider="Afzaal565\DBFieldsTranslations\DBFieldsTranslationsServiceProvider"
 php artisan migrate
-🧬 Database Structure
-🗂️ languages Table
+```
+## 🧬 Database Structure
+### 🗂️ languages Table
 Stores supported language codes:
-
-php
-Copy
-Edit
+```bash
 Schema::create('languages', function (Blueprint $table) {
     $table->id();
     $table->string('name');
     $table->string('code')->unique(); // e.g., "en", "de"
     $table->timestamps();
 });
+```
 🗂️ translations Table
 Stores translated fields for any model:
 
