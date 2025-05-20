@@ -10,27 +10,26 @@ Install the package via Composer:
 
 ```bash
 composer require afzaal565/db-fields-translations
-
-
-## 📦 Publish the config and migration files
-
+⚙️ Publish Config and Migrations
+bash
+Copy
+Edit
 php artisan vendor:publish --provider="Afzaal565\DBFieldsTranslations\DBFieldsTranslationsServiceProvider"
 php artisan migrate
-
-
 🧬 Database Structure
-languages table
+🗂️ languages Table
 Stores supported language codes:
 
+php
+Copy
+Edit
 Schema::create('languages', function (Blueprint $table) {
     $table->id();
     $table->string('name');
     $table->string('code')->unique(); // e.g., "en", "de"
     $table->timestamps();
 });
-
-
-translations table
+🗂️ translations Table
 Stores translated fields for any model:
 
 php
@@ -45,7 +44,7 @@ Schema::create('translations', function (Blueprint $table) {
     $table->timestamps();
 });
 ⚙️ Usage
-Step 1: Add Traits to Your Model
+🔹 Step 1: Add Trait to Your Model
 php
 Copy
 Edit
@@ -57,7 +56,7 @@ class Product extends Model
 
     protected $fillable = ['name', 'description'];
 }
-Step 2: Use LocaleTrait (Optional)
+🔹 Step 2: Use LocaleTrait in Controller (Optional)
 php
 Copy
 Edit
@@ -130,16 +129,3 @@ Edit
 }
 📄 License
 This package is open-source and licensed under the MIT License.
-
-yaml
-Copy
-Edit
-
----
-
-### ✅ Tips
-- Paste this into your `README.md` file.
-- Adjust model and table names if your project uses different naming conventions.
-- Add badges and links if you plan to publish to Packagist.
-
-Let me know if you'd like a version with Vue.js frontend usage too!
