@@ -33,7 +33,10 @@
         "laravel": {
             "providers": [
                 "FieldTranslations\\Providers\\FieldTranslationProvider"
-            ]
+            ],
+            "aliases": {
+                "FieldTranslation": "FieldTranslations\\Facades\\FieldTranslation"
+            }
         }
     },
     "require": {
