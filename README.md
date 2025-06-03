@@ -9,7 +9,7 @@ A lightweight Laravel package to handle multi-language translations for model fi
 Install the package via Composer:
 
 ```bash
-composer require afzaal565/db-fields-translations
+composer require afzaal565/field-translations
 ```
 ## ⚙️ Publish Config and Migrations
 
