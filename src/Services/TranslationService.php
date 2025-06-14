@@ -145,9 +145,40 @@ class TranslationService implements TranslationServiceInterface
      */
     protected function fetchTranslation(string $field, string $language): ?string
     {
-        // Implement database query to fetch translation
-        // This is a placeholder - implement actual database logic
-        return null;
+        try {
+            $languageModel = DB::table($this->config['database']['languages_table'])
+                ->where('code', $language)
+                ->first();
+
+            if (!$languageModel) {
+                Log::error("Language not found: {$language}");
+                return null;
+            }
+
+            // Use provided model type/id or fall back to the instance model
+            $modelType = isset($this->model) ? get_class($this->model) : null;
+            $modelId = isset($this->model) ? $this->model->id : null;
+
+            if (!$modelType || !$modelId) {
+                Log::error("Model type or ID missing for translation fetch. Model type: {$modelType}, Model ID: {$modelId}");
+                return null;
+            }
+
+            $translation = DB::table($this->config['database']['translations_table'])
+                ->where([
+                    'model_type' => $modelType,
+                    'model_id' => $modelId,
+                    'language_id' => $languageModel->id,
+                    'field' => $field,
+                ])
+                ->first();
+
+            Log::info("Fetched translation for field {$field} in language {$language}: " . ($translation ? $translation->translation : 'null'));
+            return $translation ? $translation->translation : null;
+        } catch (\Exception $e) {
+            Log::error('Translation fetch error: ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**
@@ -210,8 +241,35 @@ class TranslationService implements TranslationServiceInterface
      */
     protected function fetchAllTranslations(string $field): array
     {
-        // Implement database query to fetch all translations
-        // This is a placeholder - implement actual database logic
-        return [];
+        try {
+            // Use provided model type/id or fall back to the instance model
+            $modelType = isset($this->model) ? get_class($this->model) : null;
+            $modelId = isset($this->model) ? $this->model->id : null;
+
+            if (!$modelType || !$modelId) {
+                Log::error("Model type or ID missing for fetching all translations. Model type: {$modelType}, Model ID: {$modelId}");
+                return [];
+            }
+
+            $translations = DB::table($this->config['database']['translations_table'])
+                ->join($this->config['database']['languages_table'], 'languages.id', '=', 'translations.language_id')
+                ->where([
+                    'translations.model_type' => $modelType,
+                    'translations.model_id' => $modelId,
+                    'translations.field' => $field,
+                ])
+                ->select('languages.code as language', 'translations.translation')
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    return [$item->language => $item->translation];
+                })
+                ->toArray();
+
+            Log::info("Fetched all translations for field {$field}: " . json_encode($translations));
+            return $translations;
+        } catch (\Exception $e) {
+            Log::error('Error fetching all translations: ' . $e->getMessage());
+            return [];
+        }
     }
 } 
