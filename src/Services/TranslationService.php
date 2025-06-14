@@ -151,11 +151,15 @@ class TranslationService implements TranslationServiceInterface
                 ->where('field', $field)
                 ->get();
 
+            Log::info("Raw translations from database:", [
+                'translations' => $translations->toArray()
+            ]);
+
             $result = $translations->mapWithKeys(function ($translation) {
                 return [$translation->language->code => $translation->translation];
             })->toArray();
 
-            Log::info("Translations result:", [
+            Log::info("Processed translations result:", [
                 'translations' => $result
             ]);
 
