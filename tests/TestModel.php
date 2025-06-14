@@ -2,12 +2,12 @@
 
 namespace FieldTranslations\Tests;
 
+use FieldTranslations\Traits\Translateable;
 use Illuminate\Database\Eloquent\Model;
-use FieldTranslations\Traits\HasTranslations;
 
 class TestModel extends Model
 {
-    use HasTranslations;
+    use Translateable;
 
     protected $table = 'test_models';
     protected $fillable = ['name', 'description'];

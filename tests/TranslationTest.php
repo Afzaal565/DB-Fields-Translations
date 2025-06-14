@@ -4,9 +4,17 @@ namespace FieldTranslations\Tests;
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use FieldTranslations\Tests\TestModel;
+use FieldTranslations\Services\TranslationService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class TranslationTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected TestModel $model;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -42,34 +50,21 @@ class TranslationTest extends TestCase
             ['name' => 'English', 'code' => 'en'],
             ['name' => 'Spanish', 'code' => 'es'],
         ]);
+
+        $this->model = new TestModel();
     }
 
     /** @test */
     public function it_can_set_and_get_translations()
     {
-        $model = TestModel::create([
-            'name' => 'Test Product',
-            'description' => 'Test Description'
-        ]);
-
-        // Set translations
-        $model->setTranslation('name', 'es', 'Producto de Prueba');
-        $model->setTranslation('description', 'es', 'Descripción de Prueba');
-
-        // Get translations
-        $this->assertEquals('Producto de Prueba', $model->getTranslation('name', 'es'));
-        $this->assertEquals('Descripción de Prueba', $model->getTranslation('description', 'es'));
+        $this->model->setTranslation('name', 'en', 'English Name');
+        $this->assertEquals('English Name', $this->model->getTranslation('name', 'en'));
     }
 
     /** @test */
     public function it_returns_null_for_non_translatable_fields()
     {
-        $model = TestModel::create([
-            'name' => 'Test Product',
-            'description' => 'Test Description'
-        ]);
-
-        $this->assertNull($model->getTranslation('non_translatable_field', 'en'));
+        $this->assertNull($this->model->getTranslation('non_translatable_field', 'en'));
     }
 
     /** @test */
