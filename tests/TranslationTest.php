@@ -60,6 +60,7 @@ class TranslationTest extends TestCase
         // Set translations for the test model
         $this->model->setTranslation('name', 'en', 'English Name');
         $this->model->setTranslation('name', 'es', 'Producto de Prueba');
+        $this->model->setTranslation('name', 'fr', 'Nom en Français');
         $this->model->setTranslation('description', 'en', 'English Description');
         $this->model->setTranslation('description', 'es', 'Descripción de Prueba');
     }
