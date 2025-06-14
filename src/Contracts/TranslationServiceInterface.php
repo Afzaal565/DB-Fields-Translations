@@ -12,7 +12,7 @@ interface TranslationServiceInterface
      * @param Model $model
      * @return $this
      */
-    public function setModel(Model $model);
+    public function setModel(Model $model): void;
 
     /**
      * Get translation for a specific field and language.
@@ -21,7 +21,7 @@ interface TranslationServiceInterface
      * @param string $language
      * @return string|array|null
      */
-    public function getTranslation($field, string $language);
+    public function getTranslation($field, string $language): ?string;
 
     /**
      * Set translation for a specific field and language.
@@ -49,4 +49,6 @@ interface TranslationServiceInterface
      * @return bool
      */
     public function hasTranslation($field, string $language): bool;
+
+    public function getTranslationsForLanguage(string $language): array;
 } 

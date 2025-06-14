@@ -45,10 +45,9 @@ class TranslationService implements TranslationServiceInterface
      * @param Model $model
      * @return $this
      */
-    public function setModel(Model $model)
+    public function setModel($model): void
     {
         $this->model = $model;
-        return $this;
     }
 
     /**
@@ -58,7 +57,7 @@ class TranslationService implements TranslationServiceInterface
      * @param string $language
      * @return string|null
      */
-    public function getTranslation($field, string $language)
+    public function getTranslation($field, string $language): ?string
     {
         $fields = is_array($field) ? $field : [$field];
         $results = [];
@@ -261,22 +260,66 @@ class TranslationService implements TranslationServiceInterface
             }
 
             $translation = new Translation();
-            $translations = Translation::with('language')
+            
+            // Debug: Log the query parameters
+            Log::info('Fetching translations with params:', [
+                'model_type' => $modelType,
+                'model_id' => $modelId,
+                'field' => $field,
+                'table' => $translation->getTable()
+            ]);
+
+            $query = Translation::with('language')
                 ->where([
                     $translation->getModelTypeColumn() => $modelType,
                     $translation->getModelIdColumn() => $modelId,
                     $translation->getFieldColumn() => $field,
-                ])
-                ->get()
-                ->mapWithKeys(function ($translation) {
-                    return [$translation->language->code => $translation->translation];
-                })
-                ->toArray();
+                ]);
 
-            Log::info("Fetched all translations for field {$field}: " . json_encode($translations));
-            return $translations;
+            // Debug: Log the SQL query
+            Log::info('SQL Query:', [
+                'sql' => $query->toSql(),
+                'bindings' => $query->getBindings()
+            ]);
+
+            $translations = $query->get();
+
+            // Debug: Log the raw results
+            Log::info('Raw translations:', [
+                'count' => $translations->count(),
+                'data' => $translations->toArray()
+            ]);
+
+            $result = $translations->mapWithKeys(function ($translation) {
+                return [$translation->language->code => $translation->translation];
+            })->toArray();
+
+            // Debug: Log the final result
+            Log::info("Final translations for field {$field}:", $result);
+
+            return $result;
         } catch (\Exception $e) {
-            Log::error('Error fetching all translations: ' . $e->getMessage());
+            Log::error('Error fetching all translations: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
+        }
+    }
+
+    public function getTranslationsForLanguage(string $language): array
+    {
+        try {
+            $translations = $this->model->translations()
+                ->whereHas('language', function ($query) use ($language) {
+                    $query->where('code', $language);
+                })
+                ->get();
+
+            return $translations->mapWithKeys(function ($translation) {
+                return [$translation->field => $translation->translation];
+            })->toArray();
+        } catch (\Exception $e) {
+            Log::error('Error getting translations for language: ' . $e->getMessage());
             return [];
         }
     }

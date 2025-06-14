@@ -9,19 +9,24 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use FieldTranslations\Services\TranslationService;
 
 trait Translatable
 {
-    protected $translationService;
+    protected ?TranslationServiceInterface $translationService = null;
 
     protected static function bootTranslatable()
     {
         static::created(function ($model) {
             $model->initializeTranslationService();
         });
+
+        static::deleting(function ($model) {
+            $model->translations()->delete();
+        });
     }
 
-    public function initializeTranslationService()
+    protected function initializeTranslationService()
     {
         if (!$this->translationService) {
             $this->translationService = app(TranslationServiceInterface::class);
@@ -41,79 +46,114 @@ trait Translatable
      * Get translation for a specific field and language.
      * If no language is provided, uses the current application locale.
      */
-    public function getTranslation($field, ?string $language = null)
+    public function getTranslation(string $field, string $languageCode = null): ?string
     {
-        $fields = is_array($field) ? $field : [$field];
-        $fields = array_intersect($fields, $this->translatable);
-        
-        if (empty($fields)) {
+        try {
+            Log::info("Getting translation for field: {$field}, language: {$languageCode}", [
+                'model' => get_class($this),
+                'id' => $this->id
+            ]);
+
+            $this->initializeTranslationService();
+            $languageCode = $languageCode ?? App::getLocale();
+            
+            $result = $this->translationService->getTranslation($field, $languageCode);
+            
+            Log::info("Translation result:", [
+                'result' => $result
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error("Error getting translation: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return null;
         }
-
-        $this->initializeTranslationService();
-        $language = $language ?? App::getLocale();
-        
-        $result = $this->translationService->getTranslation($fields, $language);
-        return is_array($field) ? $result : ($result[$field] ?? null);
     }
 
     /**
      * Get all translations for specific field(s).
      */
-    public function getTranslations($field): array
+    public function getTranslations(string $field): array
     {
-        $fields = is_array($field) ? $field : [$field];
-        $fields = array_intersect($fields, $this->translatable);
-        
-        if (empty($fields)) {
+        try {
+            Log::info("Getting translations for field: {$field}", [
+                'model' => get_class($this),
+                'id' => $this->id
+            ]);
+
+            $this->initializeTranslationService();
+            $result = $this->translationService->getTranslations($field);
+            
+            Log::info("Translations result:", [
+                'result' => $result
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error("Error getting translations: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return [];
         }
-
-        $this->initializeTranslationService();
-        return $this->translationService->getTranslations($fields);
     }
 
     /**
      * Set translation for a specific field and language.
      */
-    public function setTranslation($field, string $language, $value): bool
+    public function setTranslation(string $field, string $languageCode, string $value): bool
     {
-        $fields = is_array($field) ? $field : [$field];
-        $fields = array_intersect($fields, $this->translatable);
-        
-        if (empty($fields)) {
+        try {
+            Log::info("Setting translation", [
+                'field' => $field,
+                'language' => $languageCode,
+                'value' => $value,
+                'model' => get_class($this),
+                'id' => $this->id
+            ]);
+
+            $this->initializeTranslationService();
+            $result = $this->translationService->setTranslation($field, $languageCode, $value);
+            
+            Log::info("Set translation result:", [
+                'success' => $result
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error("Error setting translation: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return false;
         }
-
-        $this->initializeTranslationService();
-        
-        Log::info('Setting translation', [
-            'fields' => $fields,
-            'language' => $language,
-            'values' => $value,
-            'model_id' => $this->id,
-            'model_class' => get_class($this)
-        ]);
-
-        return $this->translationService->setTranslation(
-            $fields, 
-            $language, 
-            $value,
-            get_class($this),
-            $this->id
-        );
     }
 
     /**
      * Get all translations for a specific language.
      */
-    public function getTranslationsForLanguage(string $language): array
+    public function getTranslationsForLanguage(string $languageCode): array
     {
-        $translations = [];
-        foreach ($this->translatable as $field) {
-            $translations[$field] = $this->getTranslation($field, $language);
+        try {
+            Log::info("Getting translations for language: {$languageCode}", [
+                'model' => get_class($this),
+                'id' => $this->id
+            ]);
+
+            $this->initializeTranslationService();
+            $result = $this->translationService->getTranslationsForLanguage($languageCode);
+            
+            Log::info("Language translations result:", [
+                'result' => $result
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error("Error getting translations for language: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
         }
-        return $translations;
     }
 
     /**
