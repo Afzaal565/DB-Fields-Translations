@@ -41,10 +41,12 @@ class FieldTranslationProvider extends ServiceProvider
                 __DIR__ . '/../../database/migrations/' => database_path('migrations'),
             ], 'field-translations-migrations');
 
-            // Publish seeders
-            $this->publishes([
-                __DIR__ . '/../../database/seeders/' => database_path('seeders'),
-            ], 'field-translations-seeders');
+            // Publish seeders if they exist
+            if (is_dir(__DIR__ . '/../../database/seeders')) {
+                $this->publishes([
+                    __DIR__ . '/../../database/seeders/' => database_path('seeders'),
+                ], 'field-translations-seeders');
+            }
 
             // Register commands
             $this->commands([
@@ -55,10 +57,14 @@ class FieldTranslationProvider extends ServiceProvider
         // Load migrations from the package
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
-        // Load translations
-        $this->loadTranslationsFrom(__DIR__ . '/../../resources/lang', 'field-translations');
+        // Load translations if they exist
+        if (is_dir(__DIR__ . '/../../resources/lang')) {
+            $this->loadTranslationsFrom(__DIR__ . '/../../resources/lang', 'field-translations');
+        }
 
-        // Load views if any
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'field-translations');
+        // Load views if they exist
+        if (is_dir(__DIR__ . '/../../resources/views')) {
+            $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'field-translations');
+        }
     }
 }
