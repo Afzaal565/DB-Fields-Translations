@@ -60,6 +60,11 @@ class TranslationService implements TranslationServiceInterface
     public function getTranslation($field, string $language): ?string
     {
         try {
+            Log::info("Getting translation for field: {$field}, language: {$language}", [
+                'model' => get_class($this->model),
+                'id' => $this->model->id
+            ]);
+
             $translation = $this->model->translations()
                 ->with('language')
                 ->where('field', $field)
@@ -67,6 +72,10 @@ class TranslationService implements TranslationServiceInterface
                     $query->where('code', $language);
                 })
                 ->first();
+
+            Log::info("Translation result:", [
+                'translation' => $translation ? $translation->translation : null
+            ]);
 
             return $translation ? $translation->translation : null;
         } catch (\Exception $e) {
@@ -88,8 +97,14 @@ class TranslationService implements TranslationServiceInterface
     public function setTranslation($field, string $language, $value, ?string $modelType = null, ?int $modelId = null): bool
     {
         try {
+            Log::info("Setting translation for field: {$field}, language: {$language}, value: {$value}", [
+                'model' => get_class($this->model),
+                'id' => $this->model->id
+            ]);
+
             $languageModel = Language::where('code', $language)->first();
             if (!$languageModel) {
+                Log::error("Language not found: {$language}");
                 return false;
             }
 
@@ -109,6 +124,7 @@ class TranslationService implements TranslationServiceInterface
                 ]);
             }
 
+            Log::info("Translation set successfully.");
             return true;
         } catch (\Exception $e) {
             Log::error("Error setting translation: " . $e->getMessage());
@@ -125,14 +141,25 @@ class TranslationService implements TranslationServiceInterface
     public function getTranslations($field): array
     {
         try {
+            Log::info("Getting translations for field: {$field}", [
+                'model' => get_class($this->model),
+                'id' => $this->model->id
+            ]);
+
             $translations = $this->model->translations()
                 ->with('language')
                 ->where('field', $field)
                 ->get();
 
-            return $translations->mapWithKeys(function ($translation) {
+            $result = $translations->mapWithKeys(function ($translation) {
                 return [$translation->language->code => $translation->translation];
             })->toArray();
+
+            Log::info("Translations result:", [
+                'translations' => $result
+            ]);
+
+            return $result;
         } catch (\Exception $e) {
             Log::error("Error getting translations: " . $e->getMessage());
             return [];
