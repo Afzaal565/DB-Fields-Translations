@@ -10,17 +10,22 @@ class LanguageSeeder extends Seeder
 {
     public function run()
     {
+        $countrySlug = Str::slug('United States');
+        $countryId = DB::table(config('field_translation.table_names.countries', 'dbt_countries'))
+            ->where('slug', $countrySlug)
+            ->value('id');
+
         $languages = [
-            ['name' => 'English', 'code' => 'en', 'slug' => Str::slug('English')],
-            ['name' => 'Spanish', 'code' => 'es', 'slug' => Str::slug('Spanish')],
-            ['name' => 'French', 'code' => 'fr', 'slug' => Str::slug('French')],
-            ['name' => 'German', 'code' => 'de', 'slug' => Str::slug('German')],
-            ['name' => 'Italian', 'code' => 'it', 'slug' => Str::slug('Italian')],
-            ['name' => 'Portuguese', 'code' => 'pt', 'slug' => Str::slug('Portuguese')],
-            ['name' => 'Russian', 'code' => 'ru', 'slug' => Str::slug('Russian')],
-            ['name' => 'Chinese', 'code' => 'zh', 'slug' => Str::slug('Chinese')],
-            ['name' => 'Japanese', 'code' => 'ja', 'slug' => Str::slug('Japanese')],
-            ['name' => 'Korean', 'code' => 'ko', 'slug' => Str::slug('Korean')],
+            ['name' => 'English', 'code' => 'en', 'slug' => Str::slug('English'), 'country_id' => $countryId],
+            ['name' => 'Spanish', 'code' => 'es', 'slug' => Str::slug('Spanish'), 'country_id' => $countryId],
+            ['name' => 'French', 'code' => 'fr', 'slug' => Str::slug('French'), 'country_id' => $countryId],
+            ['name' => 'German', 'code' => 'de', 'slug' => Str::slug('German'), 'country_id' => $countryId],
+            ['name' => 'Italian', 'code' => 'it', 'slug' => Str::slug('Italian'), 'country_id' => $countryId],
+            ['name' => 'Portuguese', 'code' => 'pt', 'slug' => Str::slug('Portuguese'), 'country_id' => $countryId],
+            ['name' => 'Russian', 'code' => 'ru', 'slug' => Str::slug('Russian'), 'country_id' => $countryId],
+            ['name' => 'Chinese', 'code' => 'zh', 'slug' => Str::slug('Chinese'), 'country_id' => $countryId],
+            ['name' => 'Japanese', 'code' => 'ja', 'slug' => Str::slug('Japanese'), 'country_id' => $countryId],
+            ['name' => 'Korean', 'code' => 'ko', 'slug' => Str::slug('Korean'), 'country_id' => $countryId],
         ];
 
         $table = config('field_translation.table_names.languages', 'dbt_languages');
