@@ -3,9 +3,10 @@
 namespace FieldTranslations\Services;
 
 use FieldTranslations\Contracts\TranslationServiceInterface;
+use FieldTranslations\Models\Language;
+use FieldTranslations\Models\Translation;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Model;
@@ -164,16 +165,13 @@ class TranslationService implements TranslationServiceInterface
     protected function fetchTranslation(string $field, string $language): ?string
     {
         try {
-            $languageModel = DB::table($this->config['database']['languages_table'])
-                ->where('code', $language)
-                ->first();
+            $languageModel = Language::where('code', $language)->first();
 
             if (!$languageModel) {
                 Log::error("Language not found: {$language}");
                 return null;
             }
 
-            // Use provided model type/id or fall back to the instance model
             $modelType = isset($this->model) ? get_class($this->model) : null;
             $modelId = isset($this->model) ? $this->model->id : null;
 
@@ -182,14 +180,13 @@ class TranslationService implements TranslationServiceInterface
                 return null;
             }
 
-            $translation = DB::table($this->config['database']['translations_table'])
-                ->where([
-                    'model_type' => $modelType,
-                    'model_id' => $modelId,
-                    'language_id' => $languageModel->id,
-                    'field' => $field,
-                ])
-                ->first();
+            $translation = Translation::where([
+                (new Translation)->getModelTypeColumn() => $modelType,
+                (new Translation)->getModelIdColumn() => $modelId,
+                (new Translation)->getFieldColumn() => $field,
+            ])->whereHas('language', function ($query) use ($language) {
+                $query->where('code', $language);
+            })->first();
 
             Log::info("Fetched translation for field {$field} in language {$language}: " . ($translation ? $translation->translation : 'null'));
             return $translation ? $translation->translation : null;
@@ -212,15 +209,12 @@ class TranslationService implements TranslationServiceInterface
     protected function storeTranslation(string $field, string $language, string $value, ?string $modelType = null, ?int $modelId = null): bool
     {
         try {
-            $languageModel = DB::table($this->config['database']['languages_table'])
-                ->where('code', $language)
-                ->first();
+            $languageModel = Language::where('code', $language)->first();
 
             if (!$languageModel) {
                 return false;
             }
 
-            // Use provided model type/id or fall back to the instance model
             $modelType = $modelType ?? (isset($this->model) ? get_class($this->model) : null);
             $modelId = $modelId ?? (isset($this->model) ? $this->model->id : null);
 
@@ -229,20 +223,18 @@ class TranslationService implements TranslationServiceInterface
                 return false;
             }
 
-            $translation = DB::table($this->config['database']['translations_table'])
-                ->updateOrInsert(
-                    [
-                        'model_type' => $modelType,
-                        'model_id' => $modelId,
-                        'language_id' => $languageModel->id,
-                        'field' => $field,
-                    ],
-                    [
-                        'translation' => $value,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
-                );
+            $translation = new Translation();
+            Translation::updateOrCreate(
+                [
+                    $translation->getModelTypeColumn() => $modelType,
+                    $translation->getModelIdColumn() => $modelId,
+                    $translation->getFieldColumn() => $field,
+                    config('field-translations.database.columns.translations.language_id') => $languageModel->id,
+                ],
+                [
+                    $translation->getTranslationColumn() => $value,
+                ]
+            );
 
             return true;
         } catch (\Exception $e) {
@@ -260,7 +252,6 @@ class TranslationService implements TranslationServiceInterface
     protected function fetchAllTranslations(string $field): array
     {
         try {
-            // Use provided model type/id or fall back to the instance model
             $modelType = isset($this->model) ? get_class($this->model) : null;
             $modelId = isset($this->model) ? $this->model->id : null;
 
@@ -269,17 +260,16 @@ class TranslationService implements TranslationServiceInterface
                 return [];
             }
 
-            $translations = DB::table($this->config['database']['translations_table'])
-                ->join($this->config['database']['languages_table'], 'languages.id', '=', 'translations.language_id')
+            $translation = new Translation();
+            $translations = Translation::with('language')
                 ->where([
-                    'translations.model_type' => $modelType,
-                    'translations.model_id' => $modelId,
-                    'translations.field' => $field,
+                    $translation->getModelTypeColumn() => $modelType,
+                    $translation->getModelIdColumn() => $modelId,
+                    $translation->getFieldColumn() => $field,
                 ])
-                ->select('languages.code as language', 'translations.translation')
                 ->get()
-                ->mapWithKeys(function ($item) {
-                    return [$item->language => $item->translation];
+                ->mapWithKeys(function ($translation) {
+                    return [$translation->language->code => $translation->translation];
                 })
                 ->toArray();
 

@@ -9,14 +9,19 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Translation extends Model
 {
-    protected $table;
-
-    protected $fillable = ['model_id', 'model_type', 'language_id', 'field', 'translation'];
+    protected $table = 'dbt_translations';
+    protected $fillable = [
+        'model_id',
+        'model_type',
+        'language_id',
+        'field',
+        'translation'
+    ];
 
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('field_translation.table_names.translations', 'dbt_translations');
+        $this->table = config('field-translations.database.translations_table', $this->table);
     }
 
     public function model(): MorphTo
@@ -26,6 +31,26 @@ class Translation extends Model
 
     public function language(): BelongsTo
     {
-        return $this->belongsTo(Language::class, 'language_id');
+        return $this->belongsTo(Language::class, config('field-translations.database.columns.translations.language_id'));
+    }
+
+    protected function getModelTypeColumn(): string
+    {
+        return config('field-translations.database.columns.translations.model_type');
+    }
+
+    protected function getModelIdColumn(): string
+    {
+        return config('field-translations.database.columns.translations.model_id');
+    }
+
+    protected function getFieldColumn(): string
+    {
+        return config('field-translations.database.columns.translations.field');
+    }
+
+    protected function getTranslationColumn(): string
+    {
+        return config('field-translations.database.columns.translations.translation');
     }
 }
