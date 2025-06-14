@@ -9,9 +9,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Translation extends Model
 {
-    protected $table = 'dbt_translations';
+    protected $table;
 
     protected $fillable = ['model_id', 'model_type', 'language_id', 'field', 'translation'];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->table = config('field_translation.table_names.translations', 'dbt_translations');
+    }
 
     public function model(): MorphTo
     {

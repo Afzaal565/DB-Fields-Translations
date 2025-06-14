@@ -13,9 +13,15 @@ class Language extends Model
 {
     use Sluggable;
 
-    protected $table = 'dbt_languages';
+    protected $table;
 
     protected $fillable = ['name', 'slug', 'code', 'country_id', 'rtl'];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->table = config('field_translation.table_names.languages', 'dbt_languages');
+    }
 
     public function country(): BelongsTo
     {

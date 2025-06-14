@@ -34,7 +34,7 @@ return [
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
          */
-        'languages' => 'dbt_languages',
+        'languages' => env('FIELD_TRANSLATIONS_LANGUAGES_TABLE', 'dbt_languages'),
 
         /*
          * When using the "HasPermissions" trait from this package, we need to know which

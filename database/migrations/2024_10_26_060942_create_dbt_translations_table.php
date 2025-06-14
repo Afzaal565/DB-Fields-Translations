@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $tableName = config('field_translation.translations') ?? 'dbt_translations';
-
-        $languageTable = config('field_translation.languages') ?? 'dbt_languages';
-
+        $tableName = config('field_translation.table_names.translations', 'dbt_translations');
+        $languageTable = config('field_translation.table_names.languages', 'dbt_languages');
 
         Schema::create($tableName, function (Blueprint $table) use ($languageTable) {
             $table->bigIncrements('id');
