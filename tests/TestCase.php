@@ -37,5 +37,9 @@ class TestCase extends BaseTestCase
                 'prefix' => 'field_translations_',
             ],
         ]);
+
+        // Set the environment variables for the languages and translations tables
+        $app['config']->set('field-translations.database.languages_table', 'languages');
+        $app['config']->set('field-translations.database.translations_table', 'translations');
     }
 } 
