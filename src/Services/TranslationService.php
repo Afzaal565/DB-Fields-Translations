@@ -59,19 +59,20 @@ class TranslationService implements TranslationServiceInterface
      */
     public function getTranslation($field, string $language): ?string
     {
-        $fields = is_array($field) ? $field : [$field];
-        $results = [];
-        
-        foreach ($fields as $f) {
-            $cacheKey = $this->getCacheKey($f, $language);
-            $results[$f] = isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']
-                ? Cache::remember($cacheKey, $this->config['cache']['ttl'] ?? 60 * 24, function () use ($f, $language) {
-                    return $this->fetchTranslation($f, $language);
+        try {
+            $translation = $this->model->translations()
+                ->with('language')
+                ->where('field', $field)
+                ->whereHas('language', function ($query) use ($language) {
+                    $query->where('code', $language);
                 })
-                : $this->fetchTranslation($f, $language);
-        }
+                ->first();
 
-        return is_array($field) ? $results : ($results[$field] ?? null);
+            return $translation ? $translation->translation : null;
+        } catch (\Exception $e) {
+            Log::error("Error getting translation: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**
@@ -86,19 +87,33 @@ class TranslationService implements TranslationServiceInterface
      */
     public function setTranslation($field, string $language, $value, ?string $modelType = null, ?int $modelId = null): bool
     {
-        $fields = is_array($field) ? $field : [$field];
-        $values = is_array($value) ? $value : [$field => $value];
-        $success = true;
-
-        foreach ($fields as $f) {
-            $cacheKey = $this->getCacheKey($f, $language);
-            if (isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']) {
-                Cache::forget($cacheKey);
+        try {
+            $languageModel = Language::where('code', $language)->first();
+            if (!$languageModel) {
+                return false;
             }
-            $success = $success && $this->storeTranslation($f, $language, $values[$f], $modelType, $modelId);
-        }
 
-        return $success;
+            $translation = $this->model->translations()
+                ->where('field', $field)
+                ->where('language_id', $languageModel->id)
+                ->first();
+
+            if ($translation) {
+                $translation->translation = $value;
+                $translation->save();
+            } else {
+                $this->model->translations()->create([
+                    'field' => $field,
+                    'translation' => $value,
+                    'language_id' => $languageModel->id
+                ]);
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error("Error setting translation: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -109,19 +124,19 @@ class TranslationService implements TranslationServiceInterface
      */
     public function getTranslations($field): array
     {
-        $fields = is_array($field) ? $field : [$field];
-        $results = [];
+        try {
+            $translations = $this->model->translations()
+                ->with('language')
+                ->where('field', $field)
+                ->get();
 
-        foreach ($fields as $f) {
-            $cacheKey = $this->getCacheKey($f, 'all');
-            $results[$f] = $this->config['cache']['enabled']
-                ? Cache::remember($cacheKey, $this->config['cache']['ttl'], function () use ($f) {
-                    return $this->fetchAllTranslations($f);
-                })
-                : $this->fetchAllTranslations($f);
+            return $translations->mapWithKeys(function ($translation) {
+                return [$translation->language->code => $translation->translation];
+            })->toArray();
+        } catch (\Exception $e) {
+            Log::error("Error getting translations: " . $e->getMessage());
+            return [];
         }
-
-        return is_array($field) ? $results : ($results[$field] ?? []);
     }
 
     /**
@@ -133,13 +148,17 @@ class TranslationService implements TranslationServiceInterface
      */
     public function hasTranslation($field, string $language): bool
     {
-        $fields = is_array($field) ? $field : [$field];
-        foreach ($fields as $f) {
-            if ($this->getTranslation($f, $language) === null) {
-                return false;
-            }
+        try {
+            return $this->model->translations()
+                ->where('field', $field)
+                ->whereHas('language', function ($query) use ($language) {
+                    $query->where('code', $language);
+                })
+                ->exists();
+        } catch (\Exception $e) {
+            Log::error("Error checking translation: " . $e->getMessage());
+            return false;
         }
-        return true;
     }
 
     /**
@@ -251,55 +270,31 @@ class TranslationService implements TranslationServiceInterface
     protected function fetchAllTranslations(string $field): array
     {
         try {
-            $modelType = isset($this->model) ? get_class($this->model) : null;
-            $modelId = isset($this->model) ? $this->model->id : null;
-
-            if (!$modelType || !$modelId) {
-                Log::error("Model type or ID missing for fetching all translations. Model type: {$modelType}, Model ID: {$modelId}");
-                return [];
-            }
-
-            $translation = new Translation();
-            
-            // Debug: Log the query parameters
-            Log::info('Fetching translations with params:', [
-                'model_type' => $modelType,
-                'model_id' => $modelId,
+            Log::info("Fetching all translations", [
                 'field' => $field,
-                'table' => $translation->getTable()
+                'model_type' => get_class($this->model),
+                'model_id' => $this->model->id
             ]);
 
-            $query = Translation::with('language')
-                ->where([
-                    $translation->getModelTypeColumn() => $modelType,
-                    $translation->getModelIdColumn() => $modelId,
-                    $translation->getFieldColumn() => $field,
-                ]);
+            $translations = $this->model->translations()
+                ->with('language')
+                ->where('field', $field)
+                ->get();
 
-            // Debug: Log the SQL query
-            Log::info('SQL Query:', [
-                'sql' => $query->toSql(),
-                'bindings' => $query->getBindings()
-            ]);
-
-            $translations = $query->get();
-
-            // Debug: Log the raw results
-            Log::info('Raw translations:', [
+            Log::info("Found translations", [
                 'count' => $translations->count(),
-                'data' => $translations->toArray()
+                'translations' => $translations->toArray()
             ]);
 
             $result = $translations->mapWithKeys(function ($translation) {
                 return [$translation->language->code => $translation->translation];
             })->toArray();
 
-            // Debug: Log the final result
-            Log::info("Final translations for field {$field}:", $result);
+            Log::info("Processed result", $result);
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('Error fetching all translations: ' . $e->getMessage(), [
+            Log::error("Error fetching all translations: " . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
             return [];
@@ -310,6 +305,7 @@ class TranslationService implements TranslationServiceInterface
     {
         try {
             $translations = $this->model->translations()
+                ->with('language')
                 ->whereHas('language', function ($query) use ($language) {
                     $query->where('code', $language);
                 })
@@ -319,7 +315,7 @@ class TranslationService implements TranslationServiceInterface
                 return [$translation->field => $translation->translation];
             })->toArray();
         } catch (\Exception $e) {
-            Log::error('Error getting translations for language: ' . $e->getMessage());
+            Log::error("Error getting translations for language: " . $e->getMessage());
             return [];
         }
     }
