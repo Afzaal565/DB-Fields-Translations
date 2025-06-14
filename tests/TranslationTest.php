@@ -49,6 +49,7 @@ class TranslationTest extends TestCase
         $this->app['db']->table('languages')->insert([
             ['name' => 'English', 'code' => 'en'],
             ['name' => 'Spanish', 'code' => 'es'],
+            ['name' => 'French', 'code' => 'fr'],
         ]);
 
         // Create a test model instance
