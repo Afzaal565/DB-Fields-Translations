@@ -4,11 +4,20 @@ namespace FieldTranslations\Traits;
 
 use FieldTranslations\Models\Language;
 use FieldTranslations\Models\Translation;
+use FieldTranslations\Services\TranslationService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
 
 trait Translateable
 {
+    protected $translationService;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->translationService = app(TranslationService::class);
+        $this->translationService->setModel($this);
+    }
 
     public function translations(): MorphMany
     {
@@ -37,23 +46,27 @@ trait Translateable
         });
     }
 
+    public function setTranslation($field, $language, $value)
+    {
+        return $this->translationService->setTranslation($field, $language, $value);
+    }
+
+    public function getTranslation($field, $language)
+    {
+        return $this->translationService->getTranslation($field, $language);
+    }
+
     public function translationTo(Request $request, Language $language, $fields)
     {
         if (is_array($fields)) {
             foreach ($fields as $field) {
                 if ($request->$field !== null) {
-                    $this->translations()->updateOrCreate(
-                        ['language_id' => $language->id, 'field' => $field],
-                        ['translation' => $request->$field]
-                    );
+                    $this->setTranslation($field, $language->code, $request->$field);
                 }
             }
         } else {
             if ($request->$fields !== null) {
-                $this->translations()->updateOrCreate(
-                    ['language_id' => $language->id, 'field' => $fields],
-                    ['translation' => $request->$fields]
-                );
+                $this->setTranslation($fields, $language->code, $request->$fields);
             }
         }
     }

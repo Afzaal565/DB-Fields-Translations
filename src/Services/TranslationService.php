@@ -5,8 +5,10 @@ namespace FieldTranslations\Services;
 use FieldTranslations\Contracts\TranslationServiceInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
-
+use Illuminate\Database\Eloquent\Model;
 
 class TranslationService implements TranslationServiceInterface
 {
@@ -14,6 +16,11 @@ class TranslationService implements TranslationServiceInterface
      * @var array
      */
     protected $config;
+
+    /**
+     * @var Model
+     */
+    protected $model;
 
     /**
      * Create a new translation service instance.
@@ -29,6 +36,18 @@ class TranslationService implements TranslationServiceInterface
                 'prefix' => 'field_translations_'
             ]
         ]);
+    }
+
+    /**
+     * Set the model for translations
+     *
+     * @param Model $model
+     * @return $this
+     */
+    public function setModel(Model $model)
+    {
+        $this->model = $model;
+        return $this;
     }
 
     /**
@@ -139,9 +158,35 @@ class TranslationService implements TranslationServiceInterface
      */
     protected function storeTranslation(string $field, string $language, string $value): bool
     {
-        // Implement database query to store translation
-        // This is a placeholder - implement actual database logic
-        return true;
+        try {
+            $languageModel = DB::table($this->config['database']['languages_table'])
+                ->where('code', $language)
+                ->first();
+
+            if (!$languageModel) {
+                return false;
+            }
+
+            $translation = DB::table($this->config['database']['translations_table'])
+                ->updateOrInsert(
+                    [
+                        'model_type' => get_class($this->model),
+                        'model_id' => $this->model->id,
+                        'language_id' => $languageModel->id,
+                        'field' => $field,
+                    ],
+                    [
+                        'translation' => $value,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Translation storage error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
