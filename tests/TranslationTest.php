@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use FieldTranslations\Tests\TestModel;
 use FieldTranslations\Services\TranslationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use FieldTranslations\Tests\TestCase;
 
 class TranslationTest extends TestCase
 {
