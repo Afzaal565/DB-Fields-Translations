@@ -76,9 +76,11 @@ class TranslationService implements TranslationServiceInterface
      * @param string $field
      * @param string $language
      * @param string $value
+     * @param string|null $modelType
+     * @param int|null $modelId
      * @return bool
      */
-    public function setTranslation(string $field, string $language, string $value): bool
+    public function setTranslation(string $field, string $language, string $value, ?string $modelType = null, ?int $modelId = null): bool
     {
         $cacheKey = $this->getCacheKey($field, $language);
 
@@ -88,7 +90,7 @@ class TranslationService implements TranslationServiceInterface
         }
 
         // Store translation in database
-        return $this->storeTranslation($field, $language, $value);
+        return $this->storeTranslation($field, $language, $value, $modelType, $modelId);
     }
 
     /**
@@ -154,9 +156,11 @@ class TranslationService implements TranslationServiceInterface
      * @param string $field
      * @param string $language
      * @param string $value
+     * @param string|null $modelType
+     * @param int|null $modelId
      * @return bool
      */
-    protected function storeTranslation(string $field, string $language, string $value): bool
+    protected function storeTranslation(string $field, string $language, string $value, ?string $modelType = null, ?int $modelId = null): bool
     {
         try {
             $languageModel = DB::table($this->config['database']['languages_table'])
@@ -167,11 +171,20 @@ class TranslationService implements TranslationServiceInterface
                 return false;
             }
 
+            // Use provided model type/id or fall back to the instance model
+            $modelType = $modelType ?? (isset($this->model) ? get_class($this->model) : null);
+            $modelId = $modelId ?? (isset($this->model) ? $this->model->id : null);
+
+            if (!$modelType || !$modelId) {
+                Log::error('Translation storage error: Model type or ID is missing');
+                return false;
+            }
+
             $translation = DB::table($this->config['database']['translations_table'])
                 ->updateOrInsert(
                     [
-                        'model_type' => get_class($this->model),
-                        'model_id' => $this->model->id,
+                        'model_type' => $modelType,
+                        'model_id' => $modelId,
                         'language_id' => $languageModel->id,
                         'field' => $field,
                     ],

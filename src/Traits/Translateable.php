@@ -48,7 +48,13 @@ trait Translateable
 
     public function setTranslation($field, $language, $value)
     {
-        return $this->translationService->setTranslation($field, $language, $value);
+        return $this->translationService->setTranslation(
+            $field, 
+            $language, 
+            $value,
+            get_class($this),
+            $this->id
+        );
     }
 
     public function getTranslation($field, $language)
