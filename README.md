@@ -1,124 +1,95 @@
-# 🈺 DB Fields Translations
+# DB Fields Translations
 
-A lightweight Laravel package to handle multi-language translations for model fields using polymorphic relationships.
+A Laravel package for managing field translations in your database tables.
 
----
+## Installation
 
-## 📦 Installation
-
-Install the package via Composer:
+You can install the package via composer:
 
 ```bash
 composer require afzaal565/field-translations
 ```
-## ⚙️ Publish Config and Migrations
+
+## Configuration
+
+Publish the configuration file:
 
 ```bash
-php artisan vendor:publish --provider="Afzaal565\DBFieldsTranslations\DBFieldsTranslationsServiceProvider"
+php artisan vendor:publish --provider="FieldTranslations\Providers\FieldTranslationProvider"
+```
+
+This will create a `field-translations.php` config file in your config directory.
+
+## Usage
+
+### 1. Add the Trait to Your Model
+
+```php
+use FieldTranslations\Traits\HasTranslations;
+
+class YourModel extends Model
+{
+    use HasTranslations;
+    
+    protected $translatable = [
+        'title',
+        'description',
+        // Add your translatable fields here
+    ];
+}
+```
+
+### 2. Create Translation Tables
+
+Run the migrations:
+
+```bash
 php artisan migrate
 ```
-## 🧬 Database Structure
-### 🗂️ languages Table
-Stores supported language codes:
-```bash
-Schema::create('languages', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->string('code')->unique(); // e.g., "en", "de"
-    $table->timestamps();
-});
+
+### 3. Working with Translations
+
+```php
+// Set translations
+$model->setTranslation('title', 'en', 'English Title');
+$model->setTranslation('title', 'es', 'Spanish Title');
+
+// Get translations
+$model->getTranslation('title', 'en'); // Returns: English Title
+$model->getTranslation('title', 'es'); // Returns: Spanish Title
+
+// Get all translations for a field
+$model->getTranslations('title'); // Returns array of all translations
+
+// Check if translation exists
+$model->hasTranslation('title', 'en'); // Returns boolean
 ```
-### 🗂️ translations Table
-Stores translated fields for any model:
-```bash
-Schema::create('translations', function (Blueprint $table) {
-    $table->id();
-    $table->morphs('model'); // model_type & model_id
-    $table->unsignedBigInteger('language_id');
-    $table->string('field');
-    $table->text('translation');
-    $table->timestamps();
-});
-```
-# ⚙️ Usage
-##🔹 Step 1: Add Trait to Your Model
-```bash
-use FieldTranslations\Traits\Translateable;
 
-class Product extends Model
-{
-    use Translateable;
+## Features
 
-    protected $fillable = ['name', 'description'];
-}
-```
-##🔹 Step 2: Use LocaleTrait in Controller (Optional)
+- Easy to integrate with any Laravel model
+- Support for multiple languages
+- Automatic translation table creation
+- Flexible configuration options
+- Cache support for better performance
 
-```bash
-use FieldTranslations\Traits\LocaleTrait;
+## Configuration Options
 
-class ExampleController extends Controller
-{
-    use LocaleTrait;
+In your `config/field-translations.php` file, you can configure:
 
-    public function currentLanguage()
-    {
-        return $this->getLanguage(); // Based on App::getLocale()
-    }
-}
+- Default language
+- Available languages
+- Cache settings
+- Table naming conventions
 
-# 📝 Storing Translations
-```bash
-public function store(Request $request)
-{
-    $product = Product::create([
-        'name' => $request->name,
-        'description' => $request->description,
-    ]);
+## Contributing
 
-    $language = Language::where('code', 'de')->first();
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-    $product->translationTo($request, $language, ['name', 'description']);
-}
-```
-## 🔍 Retrieving Translations
-```bash
-$currentLangId = Language::where('code', app()->getLocale())->value('id');
+## Security
 
-$product = Product::find($id);
+If you discover any security related issues, please email afzaalhussain565@gmail.com instead of using the issue tracker.
 
-// Get translation for a specific field
-$name = $product->tranlationByField($currentLangId, 'name') ?? $product->name;
-```
-## 🔎 Filtering Models Without a Translation
-```bash
-$languageId = Language::where('code', 'de')->value('id');
+## License
 
-$productsWithoutGerman = Product::withoutTranslationForLanguage($languageId)->get();
-```
-## 🔧 Available Methods
-### Method	Description
-```bash
-translations()	MorphMany relationship
-getTranslatedFields($languageId)	Get all translations for the language
-getFirstTranslation($languageId)	Get the first translated value
-tranlationByField($languageId, $field)	Get a specific field translation
-translationTo($request, $language, $fields)	Save or update translation(s)
-scopeWithoutTranslationForLanguage($languageId)	Scope to find records without translation
-```
-## ✅ Example JSON Output
-```bash
-{
-  "id": 1,
-  "name": "Shoes",
-  "translations": [
-    {
-      "language_id": 2,
-      "field": "name",
-      "translation": "Schuhe"
-    }
-  ]
-}
-```
-# 📄 License
-This package is open-source and licensed under the MIT License.
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
