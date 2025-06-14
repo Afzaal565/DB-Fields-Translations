@@ -17,7 +17,7 @@ return new class extends Migration
         Schema::create($tableName, function (Blueprint $table) use ($countryTable) {
             $table->id();
             $table->string('name'); // 'name' column
-            $table->string('slug')->unique(); // 'slug' column, set as unique
+            $table->string('slug')->nullable()->unique(); // 'slug' column, set as unique
             $table->string('code', 10); // 'code' column, with a max length of 10 characters
             $table->foreignId('country_id')->constrained($countryTable)->onDelete('cascade'); // 'country_id' foreign key
             $table->boolean('rtl')->default(false);
