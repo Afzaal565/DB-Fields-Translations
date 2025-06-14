@@ -7,16 +7,25 @@ use FieldTranslations\Models\Translation;
 use FieldTranslations\Services\TranslationService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 trait Translateable
 {
     protected $translationService;
 
-    public function __construct(array $attributes = [])
+    protected static function bootTranslateable()
     {
-        parent::__construct($attributes);
-        $this->translationService = app(TranslationService::class);
-        $this->translationService->setModel($this);
+        static::created(function ($model) {
+            $model->initializeTranslationService();
+        });
+    }
+
+    public function initializeTranslationService()
+    {
+        if (!$this->translationService) {
+            $this->translationService = app(TranslationService::class);
+            $this->translationService->setModel($this);
+        }
     }
 
     public function translations(): MorphMany
@@ -48,6 +57,16 @@ trait Translateable
 
     public function setTranslation($field, $language, $value)
     {
+        $this->initializeTranslationService();
+        
+        Log::info('Translateable trait setTranslation', [
+            'field' => $field,
+            'language' => $language,
+            'value' => $value,
+            'model_id' => $this->id,
+            'model_class' => get_class($this)
+        ]);
+
         return $this->translationService->setTranslation(
             $field, 
             $language, 
@@ -59,11 +78,14 @@ trait Translateable
 
     public function getTranslation($field, $language)
     {
+        $this->initializeTranslationService();
         return $this->translationService->getTranslation($field, $language);
     }
 
     public function translationTo(Request $request, Language $language, $fields)
     {
+        $this->initializeTranslationService();
+        
         if (is_array($fields)) {
             foreach ($fields as $field) {
                 if ($request->$field !== null) {
