@@ -52,8 +52,8 @@ return [
     |
     */
     'database' => [
-        'languages_table' => 'languages',
-        'translations_table' => 'translations',
+        'languages_table' => env('FIELD_TRANSLATIONS_LANGUAGES_TABLE', 'dbt_languages'),
+        'translations_table' => env('FIELD_TRANSLATIONS_TRANSLATIONS_TABLE', 'dbt_translations'),
         'columns' => [
             'languages' => [
                 'id' => 'id',

@@ -29,7 +29,7 @@ return [
         /*
          * When using the trait from this package, we need to know which
          */
-        'countries' => 'dbt_countries',
+        'countries' => env('FIELD_TRANSLATIONS_COUNTRIES_TABLE', 'dbt_countries'),
 
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
@@ -39,7 +39,7 @@ return [
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
          */
-        'translations' => 'dbt_translations',
+        'translations' => env('FIELD_TRANSLATIONS_TRANSLATIONS_TABLE', 'dbt_translations'),
 
     ],
 
