@@ -41,52 +41,62 @@ trait Translatable
      * Get translation for a specific field and language.
      * If no language is provided, uses the current application locale.
      */
-    public function getTranslation(string $field, ?string $language = null): ?string
+    public function getTranslation($field, ?string $language = null)
     {
-        if (!in_array($field, $this->translatable)) {
+        $fields = is_array($field) ? $field : [$field];
+        $fields = array_intersect($fields, $this->translatable);
+        
+        if (empty($fields)) {
             return null;
         }
 
         $this->initializeTranslationService();
         $language = $language ?? App::getLocale();
         
-        return $this->translationService->getTranslation($field, $language);
+        $result = $this->translationService->getTranslation($fields, $language);
+        return is_array($field) ? $result : ($result[$field] ?? null);
     }
 
     /**
-     * Get all translations for a specific field.
+     * Get all translations for specific field(s).
      */
-    public function getTranslations(string $field): array
+    public function getTranslations($field): array
     {
-        if (!in_array($field, $this->translatable)) {
+        $fields = is_array($field) ? $field : [$field];
+        $fields = array_intersect($fields, $this->translatable);
+        
+        if (empty($fields)) {
             return [];
         }
 
         $this->initializeTranslationService();
-        return $this->translationService->getTranslations($field);
+        return $this->translationService->getTranslations($fields);
     }
 
     /**
      * Set translation for a specific field and language.
      */
-    public function setTranslation(string $field, string $language, string $value): bool
+    public function setTranslation($field, string $language, $value): bool
     {
-        if (!in_array($field, $this->translatable)) {
+        $fields = is_array($field) ? $field : [$field];
+        $fields = array_intersect($fields, $this->translatable);
+        
+        if (empty($fields)) {
             return false;
         }
 
         $this->initializeTranslationService();
         
         Log::info('Setting translation', [
-            'field' => $field,
+            'fields' => $fields,
             'language' => $language,
-            'value' => $value,
+            'values' => $value,
             'model_id' => $this->id,
             'model_class' => get_class($this)
         ]);
 
         return $this->translationService->setTranslation(
-            $field, 
+            $fields, 
             $language, 
             $value,
             get_class($this),

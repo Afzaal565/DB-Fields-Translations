@@ -53,75 +53,93 @@ class TranslationService implements TranslationServiceInterface
     /**
      * Get translation for a specific field and language.
      *
-     * @param string $field
+     * @param string|array $field
      * @param string $language
      * @return string|null
      */
-    public function getTranslation(string $field, string $language): ?string
+    public function getTranslation($field, string $language)
     {
-        $cacheKey = $this->getCacheKey($field, $language);
-
-        if (isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']) {
-            return Cache::remember($cacheKey, $this->config['cache']['ttl'] ?? 60 * 24, function () use ($field, $language) {
-                return $this->fetchTranslation($field, $language);
-            });
+        $fields = is_array($field) ? $field : [$field];
+        $results = [];
+        
+        foreach ($fields as $f) {
+            $cacheKey = $this->getCacheKey($f, $language);
+            $results[$f] = isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']
+                ? Cache::remember($cacheKey, $this->config['cache']['ttl'] ?? 60 * 24, function () use ($f, $language) {
+                    return $this->fetchTranslation($f, $language);
+                })
+                : $this->fetchTranslation($f, $language);
         }
 
-        return $this->fetchTranslation($field, $language);
+        return is_array($field) ? $results : ($results[$field] ?? null);
     }
 
     /**
      * Set translation for a specific field and language.
      *
-     * @param string $field
+     * @param string|array $field
      * @param string $language
-     * @param string $value
+     * @param string|array $value
      * @param string|null $modelType
      * @param int|null $modelId
      * @return bool
      */
-    public function setTranslation(string $field, string $language, string $value, ?string $modelType = null, ?int $modelId = null): bool
+    public function setTranslation($field, string $language, $value, ?string $modelType = null, ?int $modelId = null): bool
     {
-        $cacheKey = $this->getCacheKey($field, $language);
+        $fields = is_array($field) ? $field : [$field];
+        $values = is_array($value) ? $value : [$field => $value];
+        $success = true;
 
-        // Clear cache if enabled
-        if (isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']) {
-            Cache::forget($cacheKey);
+        foreach ($fields as $f) {
+            $cacheKey = $this->getCacheKey($f, $language);
+            if (isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']) {
+                Cache::forget($cacheKey);
+            }
+            $success = $success && $this->storeTranslation($f, $language, $values[$f], $modelType, $modelId);
         }
 
-        // Store translation in database
-        return $this->storeTranslation($field, $language, $value, $modelType, $modelId);
+        return $success;
     }
 
     /**
      * Get all translations for a specific field.
      *
-     * @param string $field
+     * @param string|array $field
      * @return array
      */
-    public function getTranslations(string $field): array
+    public function getTranslations($field): array
     {
-        $cacheKey = $this->getCacheKey($field, 'all');
+        $fields = is_array($field) ? $field : [$field];
+        $results = [];
 
-        if ($this->config['cache']['enabled']) {
-            return Cache::remember($cacheKey, $this->config['cache']['ttl'], function () use ($field) {
-                return $this->fetchAllTranslations($field);
-            });
+        foreach ($fields as $f) {
+            $cacheKey = $this->getCacheKey($f, 'all');
+            $results[$f] = $this->config['cache']['enabled']
+                ? Cache::remember($cacheKey, $this->config['cache']['ttl'], function () use ($f) {
+                    return $this->fetchAllTranslations($f);
+                })
+                : $this->fetchAllTranslations($f);
         }
 
-        return $this->fetchAllTranslations($field);
+        return is_array($field) ? $results : ($results[$field] ?? []);
     }
 
     /**
      * Check if translation exists for a specific field and language.
      *
-     * @param string $field
+     * @param string|array $field
      * @param string $language
      * @return bool
      */
-    public function hasTranslation(string $field, string $language): bool
+    public function hasTranslation($field, string $language): bool
     {
-        return $this->getTranslation($field, $language) !== null;
+        $fields = is_array($field) ? $field : [$field];
+        foreach ($fields as $f) {
+            if ($this->getTranslation($f, $language) === null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

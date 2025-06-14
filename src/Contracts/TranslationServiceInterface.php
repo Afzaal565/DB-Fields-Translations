@@ -17,36 +17,36 @@ interface TranslationServiceInterface
     /**
      * Get translation for a specific field and language.
      *
-     * @param string $field
+     * @param string|array $field
      * @param string $language
-     * @return string|null
+     * @return string|array|null
      */
-    public function getTranslation(string $field, string $language): ?string;
+    public function getTranslation($field, string $language);
 
     /**
      * Set translation for a specific field and language.
      *
-     * @param string $field
+     * @param string|array $field
      * @param string $language
-     * @param string $value
+     * @param string|array $value
      * @return bool
      */
-    public function setTranslation(string $field, string $language, string $value): bool;
+    public function setTranslation($field, string $language, $value): bool;
 
     /**
-     * Get all translations for a specific field.
+     * Get all translations for specific field(s).
      *
-     * @param string $field
+     * @param string|array $field
      * @return array
      */
-    public function getTranslations(string $field): array;
+    public function getTranslations($field): array;
 
     /**
      * Check if translation exists for a specific field and language.
      *
-     * @param string $field
+     * @param string|array $field
      * @param string $language
      * @return bool
      */
-    public function hasTranslation(string $field, string $language): bool;
+    public function hasTranslation($field, string $language): bool;
 } 
