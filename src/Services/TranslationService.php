@@ -5,6 +5,8 @@ namespace FieldTranslations\Services;
 use FieldTranslations\Contracts\TranslationServiceInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
+
 
 class TranslationService implements TranslationServiceInterface
 {
@@ -16,9 +18,9 @@ class TranslationService implements TranslationServiceInterface
     /**
      * Create a new translation service instance.
      *
-     * @param array $config
+     * @param ConfigRepository $config
      */
-    public function __construct(array $config)
+    public function __construct(ConfigRepository $config)
     {
         $this->config = $config;
     }
