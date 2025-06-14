@@ -2,8 +2,18 @@
 
 namespace FieldTranslations\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
+
 interface TranslationServiceInterface
 {
+    /**
+     * Set the model for translations
+     *
+     * @param Model $model
+     * @return $this
+     */
+    public function setModel(Model $model);
+
     /**
      * Get translation for a specific field and language.
      *
