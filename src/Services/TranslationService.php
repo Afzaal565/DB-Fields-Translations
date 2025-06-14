@@ -22,7 +22,13 @@ class TranslationService implements TranslationServiceInterface
      */
     public function __construct(ConfigRepository $config)
     {
-        $this->config = $config;
+        $this->config = $config->get('field-translations', [
+            'cache' => [
+                'enabled' => false,
+                'ttl' => 60 * 24,
+                'prefix' => 'field_translations_'
+            ]
+        ]);
     }
 
     /**
@@ -36,8 +42,8 @@ class TranslationService implements TranslationServiceInterface
     {
         $cacheKey = $this->getCacheKey($field, $language);
 
-        if ($this->config['cache']['enabled']) {
-            return Cache::remember($cacheKey, $this->config['cache']['ttl'], function () use ($field, $language) {
+        if (isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']) {
+            return Cache::remember($cacheKey, $this->config['cache']['ttl'] ?? 60 * 24, function () use ($field, $language) {
                 return $this->fetchTranslation($field, $language);
             });
         }
@@ -58,7 +64,7 @@ class TranslationService implements TranslationServiceInterface
         $cacheKey = $this->getCacheKey($field, $language);
 
         // Clear cache if enabled
-        if ($this->config['cache']['enabled']) {
+        if (isset($this->config['cache']['enabled']) && $this->config['cache']['enabled']) {
             Cache::forget($cacheKey);
         }
 
