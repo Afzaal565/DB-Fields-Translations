@@ -1,6 +1,6 @@
 {
     "name": "afzaal565/field-translations",
-    "description": "A Laravel package for field translations.",
+    "description": "Laravel package for multilingual field translations via polymorphic relations",
     "keywords": [
         "afzaal565",
         "field",
@@ -9,7 +9,12 @@
         "dbt_languages",
         "translations",
         "db_translations",
-        "field_translations"
+        "field_translations",
+        "laravel",
+        "translation",
+        "multilingual",
+        "api",
+        "field-translations"
     ],
     "authors": [
         {
