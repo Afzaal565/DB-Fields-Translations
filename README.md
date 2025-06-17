@@ -1,6 +1,6 @@
 # DB Fields Translations
 
-A Laravel package for managing field translations in your database tables.
+A Laravel package for managing field translations in your database tables using polymorphic relations.
 
 ## Installation
 
